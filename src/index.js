@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const validator = require('validator');
 
 const { v4: uuidv4, validate } = require('uuid');
 
@@ -10,19 +11,87 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const userAlreadyExists = users.find(user => user.username === username);
+
+  if (userAlreadyExists) {
+    request.user = userAlreadyExists;
+    return next();
+  } else {
+    return response.status(404).json({
+      error: "User doens't exists!"
+    });
+  }
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request;
+
+  const numberOfTodos = user.todos.length;
+
+  if (user.pro) {
+    request.user = user;
+    return next();
+  } else {
+    if (numberOfTodos < 10) {
+      request.user = user;
+      return next();
+    } else {
+      return response.status(403).json({
+        error: "User without pro can have only 10 todos."
+      });
+    }
+  } 
+
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const userExists = users.find(user => user.username === username);
+
+  if (userExists) {
+    const isUuid = validator.default.isUUID(id);
+
+    if (isUuid) {
+      const todoExists = userExists.todos.find(todo => todo.id === id);
+
+      if (todoExists) {
+        request.user = userExists;
+        request.todo = todoExists;
+        return next();
+      } else {
+        return response.status(404).json({
+          error: "This ID doesn't match with any of the user todos!"
+        });
+      }
+    } else {
+      return response.status(400).json({
+        error: "ID isn't an UUID!"
+      });
+    }
+  } else {
+    return response.status(404).json({
+      error: "User doesn't exists!"
+    });
+  } 
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+
+  const user = users.find(user => user.id === id);
+
+  if (user) {
+    request.user = user;
+    return next();
+  } else {
+    return response.status(404).json({
+      error: "User doesn't found!"
+    });
+  }
 }
 
 app.post('/users', (request, response) => {
