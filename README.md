@@ -1,4 +1,4 @@
-# desafio-modulo01-extra-middleware-node-ignite
+# desafio-middlewares-node-ignite
 Desafio extra sobre Middlewares do Módulo 01 da trilha de Node.js no Ignite da Rocketseat. 
 
 # 💻 Sobre o desafio
